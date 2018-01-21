@@ -1,0 +1,13 @@
+dist: trusty
+sudo: required
+notifications:
+  email: false
+language:
+  - cpp
+compiler:
+  - gcc
+before_install:
+install:
+script:
+  - chmod +x test.sh
+  - ./test.sh

@@ -1,7 +1,7 @@
 #include "qr.h"
 #include <complex>
 #include <iostream>
-#include <Eigen/Dense>
+#include "Eigen/Dense"
 
 extern "C" {
 
