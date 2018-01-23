@@ -1,6 +1,6 @@
 #specify compilers if needed:
-#export CXX=clang++
-#export CC=clang
+#export CXX=g++
+#export CC=gcc
 
 #compile qr library:
 $CXX qr.cpp -shared -Wall -fPIC -Wno-int-in-bool-context -O3 -o libqr.so

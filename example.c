@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// function to print lower triangular part of hermitian matrix
+// function to print lower triangular complex matrix with real diagonal elements
+// Input format for matrix is assumed to be an array of doubles with row,col ordering:
+// 00_re, 10_re, 10_im, 11_re, 20_re, 20_im, 21_re, 21_im, ...
 void print_lt_matrix(int N_rhs, double* A_lt) {
 	int	array_index = 0;
 	for(int i=0; i<N_rhs; ++i) {
@@ -13,26 +15,6 @@ void print_lt_matrix(int N_rhs, double* A_lt) {
 			if(i!=j) {
 				// only off-diagonal elements are complex
 				im = A_lt[array_index++];
-			}
-			printf("(%.8f, %.8f)\t", re, im);
-		}
-		printf("\n");
-	}
-}
-
-// function to print upper triangular matrix CURRENTLY WRONG ORDERING!
-void print_ut_matrix(int N_rhs, double* A_ut) {
-	int	array_index = 0;
-	for(int i=0; i<N_rhs; ++i) {
-		for(int j=0; j<N_rhs; ++j) {
-			double re = 0;
-			double im = 0.;
-			if (j==i) {
-				re = A_ut[array_index++];
-			} 
-			else if (j>i) {
-				re = A_ut[array_index++];
-				im = A_ut[array_index++];
 			}
 			printf("(%.8f, %.8f)\t", re, im);
 		}
@@ -101,7 +83,6 @@ void print_lt_matrix_multiplication(int N_rhs, double* A_lt, double* B_lt) {
 
 // Inverse of hermitian matrix example
 // Given NxN hermitian matrix H, find inverse R
-// where RH = HR = I
 void inverse_example(int N_rhs) {
 
 	printf("\n\n\n=======================================\n");
@@ -123,9 +104,10 @@ void inverse_example(int N_rhs) {
 	int array_index = 0;
 	for(int i=0; i<N_rhs; ++i) {
 		for(int j=0; j<=i; ++j) {
-			_Complex double H_ij = 0.0043634*(i-j)*(1.1-I); // dummy values
+			// Fill elements of H with some dummy values:
+			_Complex double H_ij = 0.0043634*(i-j)*(1.1-I);
 			if(i==j) {
-				H_ij += 1.234*(i+0.7); // dummy values
+				H_ij += 1.234*(i+0.7);
 			}
 			H_lt[array_index++] = creal(H_ij);
 			if(i!=j) {
@@ -140,15 +122,14 @@ void inverse_example(int N_rhs) {
 	// call inverse function defined in qr.h:
 	// takes integer N_rhs and array of doubles containing 
 	// lower triangular part of H as input, with ordering
-	// H_00_re, H_00_im, H_10_re, H_10_im, H_11_re, H_11_im, H_20_re, H_20_im, ...
+	// H_00_re, H_10_re, H_10_im, H_11_re, H_20_re, H_20_im, H_21_re, H_21_im, ...
 	// puts inverse of H into R in the same format.
 	inverse(N_rhs, H_lt, R_lt);
 
 	printf("\nLower triangular part of H^{-1}:\n\n");
 	print_lt_matrix(N_rhs, R_lt);
 
-	// Confirm that H*R = I
-	printf("\nH * H^{-1} = Identity:\n\n");
+	printf("\nH * H^{-1} = Identity?:\n\n");
 	print_lt_matrix_multiplication(N_rhs, H_lt, R_lt);
 
 	free(H_lt);
@@ -217,14 +198,14 @@ void qr_example(int N_rhs, int N_vol) {
 	printf("Lower triangular part of hermitian matrix H:\n\n");
 	print_lt_matrix(N_rhs, H_lt);
 
-	// call QR function defined in qr.h:
-	// takes integer N_rhs and array of doubles containing 
-	// lower triangular part of H as input, with ordering
-	// H_00_re, H_00_im, H_10_re, H_10_im, H_11_re, H_11_im, H_20_re, H_20_im, ...
-	// puts **TODO** output into R in the same format, where QR = H
+	// Do QR decomposition of hermitian NxN matrix H, i.e. find Q and R such that H = QR
+	// where Q is orthonormal hermitian, and R is upper triangular
+	// Input format for H is assumed to be an array of doubles with row,col ordering:
+	// H_00_re, H_10_re, H_10_im, H_11_re, H_20_re, H_20_im, H_21_re, H_21_im, ...
+	// Returns transpose of upper triangular R in same format as H
 	qr(N_rhs, H_lt, R_ut);
-	printf("Upper triangular matrix R:\n\n");
-	print_ut_matrix(N_rhs, R_ut);
+	printf("\nTranspose of Upper triangular matrix R:\n\n");
+	print_lt_matrix(N_rhs, R_ut);
 
 	// Solve QR = M for Q by back substitution, where R is upper triangular
 	array_index = 0;
@@ -249,7 +230,7 @@ void qr_example(int N_rhs, int N_vol) {
 	}
 
 	// Confirm that Q vectors are orthonormal:
-	printf("(Q,Q):\n");
+	printf("\n<Q|Q>:\n\n");
 	for(int i=0; i<N_rhs; ++i) {
 		for(int j=0; j<N_rhs; ++j) {
 			_Complex double dot = dot_product(N_vol, Q[i], Q[j]);
